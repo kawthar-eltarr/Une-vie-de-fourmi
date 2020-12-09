@@ -96,6 +96,7 @@ class Antnest:
     
     def adjacent_room(self, room):
         ind = room.idx
+        print(ind)
         emp = np.where(self.M[ind] == 1)
         list_adj = []
         for i in np.nditer(emp):
@@ -103,7 +104,7 @@ class Antnest:
                  list_adj.append(self.rooms[i])
         return list_adj
     
-    def test(self, room1, room2):
+    def shift(self, room1, room2):
         if len(room1.contains) > room2.capacity:
             room2.contains = copy(room2.contains) + copy(room1.contains[0:room2.capacity])
             room1.contains = copy(room1.contains[room2.capacity:])
@@ -113,28 +114,27 @@ class Antnest:
         return room1, room2
         
     
-    def shift(self):
+    def all_to_sleep(self):
         nbr = len(self.rooms)-1
+        i = 0
         while len(self.rooms[-1].contains) < self.nba :
+            i = i + 1
+            print('Etape {}'.format(i))
             for k in range(nbr,-1,-1):
-                print('Current room', self.rooms[k].name)
-                print('Contains', len(self.rooms[k].contains))
-                print()
-                list_adj = self.adjacent_room(self.rooms[k])
-                if not list_adj:
-                    pass
+                if len(self.rooms[k].contains) > 0 :
+                    list_adj = self.adjacent_room(self.rooms[k])
+                    if not list_adj:
+                        pass
+                    else:
+                        adj = random.choice(list_adj)
+                        print('From room {0} to room {1}'.format(self.rooms[k].name, adj.name))
+                        self.rooms[k], adj = self.shift(self.rooms[k], adj)
                 else:
-                    adj = random.choice(list_adj)
-                    print('Next room', adj.name)
-                    print('Contains', len(adj.contains))
-                    print()
-                    self.rooms[k], adj = self.test(self.rooms[k], adj)
-                    #print('-------------------')
-            break
+                    pass
         
 if __name__ == '__main__':
     nest = Antnest()
-    nest.shift()
+    nest.all_to_sleep()
     
     
 
