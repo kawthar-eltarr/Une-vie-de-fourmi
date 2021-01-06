@@ -16,6 +16,12 @@ class Ant:
     def __init__(self, idx):
         self.idx = idx
         self.room = 'Sv'
+        self.went_to_sleep = False
+    
+    # def move(self, departure, arrival):
+    #     self.room = arrival.name
+    #     departure.contains
+    #     arrival.contains
         
 class Room:
     def __init__(self, idx, name, contains=[], capacity=1):
@@ -23,6 +29,8 @@ class Room:
         self.name = name
         self.contains = contains
         self.capacity = capacity
+        #self.room_above = None
+        #self.room_below = None
 
 class Antnest:
     def __init__(self):
@@ -30,7 +38,7 @@ class Antnest:
         self.nba = self.__find_ants__()
         self.tunnels = self.__find_tunnels__(self.content)
         self.rooms = self.__build_rooms__()
-        self.M = self.adjacency_matrix()
+        self.M = self.__adjacency_matrix__()
 
     def __load_file__(self):
         file = open("Nests/fourmiliere_quatre.txt", "r")
@@ -69,7 +77,7 @@ class Antnest:
         objects.append(Room(idx=len(objects), name='S{}'.format(len(objects)), capacity=float("inf")))
         return objects
     
-    def adjacency_matrix(self):
+    def __adjacency_matrix__(self):
         nbr = len(self.rooms)
         M = np.zeros((nbr, nbr))
         for tunnel in self.tunnels:
@@ -96,7 +104,6 @@ class Antnest:
     
     def adjacent_room(self, room):
         ind = room.idx
-        print(ind)
         emp = np.where(self.M[ind] == 1)
         list_adj = []
         for i in np.nditer(emp):
@@ -104,15 +111,23 @@ class Antnest:
                  list_adj.append(self.rooms[i])
         return list_adj
     
+    def test(self):
+        return 0
+    
     def shift(self, room1, room2):
         if len(room1.contains) > room2.capacity:
-            room2.contains = copy(room2.contains) + copy(room1.contains[0:room2.capacity])
-            room1.contains = copy(room1.contains[room2.capacity:])
+            if room2.contains == 0:
+                room2.contains = copy(room2.contains) + copy(room1.contains[0:room2.capacity])
+                room1.contains = copy(room1.contains[room2.capacity:])
+            else:
+                r = room2.capacity - len(room2.contains)
+                room2.contains = copy(room2.contains) + copy(room1.contains[0:r])
+                room1.contains = copy(room1.contains[r:])
         else:
             room2.contains = copy(room2.contains) + copy(room1.contains)
             room1.contains = []
         return room1, room2
-        
+
     
     def all_to_sleep(self):
         nbr = len(self.rooms)-1
@@ -126,7 +141,8 @@ class Antnest:
                     if not list_adj:
                         pass
                     else:
-                        adj = random.choice(list_adj)
+                        ids = [l.idx for l in list_adj]
+                        adj = self.rooms[max(ids)]
                         print('From room {0} to room {1}'.format(self.rooms[k].name, adj.name))
                         self.rooms[k], adj = self.shift(self.rooms[k], adj)
                 else:
@@ -134,6 +150,7 @@ class Antnest:
         
 if __name__ == '__main__':
     nest = Antnest()
+    nest.look_at_the_graph()
     nest.all_to_sleep()
     
     
