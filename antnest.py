@@ -32,7 +32,7 @@ class Antnest:
         self.M = self.__adjacency_matrix__()
 
     def __load_file__(self):
-        file = open("Nests/fourmiliere_zero.txt", "r")
+        file = open("Nests/fourmiliere_un.txt", "r")
         content = file.read()
         file.close()
         return content
@@ -127,29 +127,23 @@ class Antnest:
         dic[len(self.rooms)-1] = 'Sd'
         print(dic)
         G = nx.relabel_nodes(G, dic)
-        #nx.draw(G, with_labels=True, font_size=8)
-        #plt.pause(2)
-        #plt.show()
-        return G
+        nodePos = nx.spring_layout(G)
+        return G, nodePos
 
     def all_to_sleep(self):
         print('Number of ants in the nest : {}'.format(self.nba))
         print()
         nbr = len(self.rooms)-1
         i = 0
-        G = self.init_graph()
-        nodePos = nx.spring_layout(G)
-        print(nodePos)
-        nx.draw(G, nodePos, with_labels=True, font_size=8,
-                alpha=0.8, node_color="#A86CF3")
+        G, nodePos = self.init_graph()
+        nx.draw(G, nodePos, with_labels=True, font_size=8, alpha=0.8, node_color="#A86CF3")
         while len(self.rooms[-1].contains) < self.nba :
             i = i + 1
             print()
             print('+++ E{} +++'.format(i))
-            for room in self.rooms:
-                print(len(room.contains))
-                plt.annotate(len(room.contains), xy=nodePos.get(room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
             for k in range(nbr,-1,-1):
+                for room in self.rooms:
+                    plt.annotate(len(room.contains), xy=nodePos.get(room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
                 current_room = self.rooms[k]
                 if len(current_room.contains) > 0 :
                     list_adj = self.adjacent_room(current_room)
@@ -164,6 +158,7 @@ class Antnest:
 
                 else:
                     pass
+        plt.show()
         
 if __name__ == '__main__':
     nest = Antnest()
