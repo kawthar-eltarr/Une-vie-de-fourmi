@@ -15,12 +15,7 @@ class Ant:
     def __init__(self, idx):
         self.idx = idx
         self.room = 'Sv'
-    
-    # def move(self, departure, arrival):
-    #     self.room = arrival.name
-    #     departure.contains
-    #     arrival.contains
-        
+
 class Room:
     def __init__(self, idx, name, contains=[], capacity=1):
         self.idx = idx
@@ -37,7 +32,7 @@ class Antnest:
         self.M = self.__adjacency_matrix__()
 
     def __load_file__(self):
-        file = open("Nests/fourmiliere_cinq.txt", "r")
+        file = open("Nests/fourmiliere_zero.txt", "r")
         content = file.read()
         file.close()
         return content
@@ -62,7 +57,7 @@ class Antnest:
     
     def __build_rooms__(self):
         rooms = self.__find_rooms__()
-        objects = [Room(idx=0, name='S0', contains=[Ant(i) for i in range(self.nba)], capacity=float("inf"))]
+        objects = [Room(idx=0, name='Sv', contains=[Ant(i) for i in range(self.nba)], capacity=float("inf"))]
         for i, room in enumerate(rooms, 1):
             if '{' in room:
                 n = room.split()[0]
@@ -70,7 +65,8 @@ class Antnest:
                 objects.append(Room(idx=i, name=n, capacity=c))
             else:
                 objects.append(Room(idx=i, name=room))
-        objects.append(Room(idx=len(objects), name='S{}'.format(len(objects)), capacity=float("inf")))
+        #objects.append(Room(idx=len(objects), name='S{}'.format(len(objects)), capacity=float("inf")))
+        objects.append(Room(idx=len(objects), name='Sd', capacity=float("inf")))
         return objects
     
     def __adjacency_matrix__(self):
@@ -86,17 +82,6 @@ class Antnest:
             M[ind[0]][ind[1]] = 1
             M[ind[1]][ind[0]] = 1
         return M
-    
-    def look_at_the_graph(self):
-        G = nx.from_numpy_array(self.M)
-        dic = {0: 'Sv'}
-        nbr = len(self.rooms)-1
-        for i in range(1, nbr):
-            dic[i] = self.rooms[i].name
-        dic[len(self.rooms)-1] = 'Sd'
-        G = nx.relabel_nodes(G, dic)
-        nx.draw(G, with_labels=True, font_size=8)
-        plt.show()
     
     def adjacent_room(self, room):
         ind = room.idx
@@ -133,31 +118,54 @@ class Antnest:
         
         return room1, room2
 
-    
+    def init_graph(self):
+        G = nx.from_numpy_array(self.M)
+        dic = {0: 'Sv'}
+        nbr = len(self.rooms)-1
+        for i in range(1, nbr):
+            dic[i] = self.rooms[i].name
+        dic[len(self.rooms)-1] = 'Sd'
+        print(dic)
+        G = nx.relabel_nodes(G, dic)
+        #nx.draw(G, with_labels=True, font_size=8)
+        #plt.pause(2)
+        #plt.show()
+        return G
+
     def all_to_sleep(self):
         print('Number of ants in the nest : {}'.format(self.nba))
         print()
         nbr = len(self.rooms)-1
         i = 0
+        G = self.init_graph()
+        nodePos = nx.spring_layout(G)
+        print(nodePos)
+        nx.draw(G, nodePos, with_labels=True, font_size=8,
+                alpha=0.8, node_color="#A86CF3")
         while len(self.rooms[-1].contains) < self.nba :
             i = i + 1
             print()
             print('+++ E{} +++'.format(i))
+            for room in self.rooms:
+                print(len(room.contains))
+                plt.annotate(len(room.contains), xy=nodePos.get(room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
             for k in range(nbr,-1,-1):
-                if len(self.rooms[k].contains) > 0 :
-                    list_adj = self.adjacent_room(self.rooms[k])
+                current_room = self.rooms[k]
+                if len(current_room.contains) > 0 :
+                    list_adj = self.adjacent_room(current_room)
                     if not list_adj:
                         pass
                     else:
                         ids = [l.idx for l in list_adj]
-                        adj = self.rooms[max(ids)]
-                        #print('From room {0} to room {1}'.format(self.rooms[k].name, adj.name))
-                        self.rooms[k], adj = self.shift(self.rooms[k], adj)
+                        adjacent_room = self.rooms[max(ids)]
+                        current_room, adjacent_room = self.shift(current_room, adjacent_room)
+                        self.rooms[k] = current_room
+                        self.rooms[max(ids)] = adjacent_room
+
                 else:
                     pass
         
 if __name__ == '__main__':
     nest = Antnest()
-    nest.look_at_the_graph()
     nest.all_to_sleep()
 
