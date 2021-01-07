@@ -41,7 +41,7 @@ class Antnest:
         self.M = self.__adjacency_matrix__()
 
     def __load_file__(self):
-        file = open("Nests/fourmiliere_quatre.txt", "r")
+        file = open("Nests/fourmiliere_zero.txt", "r")
         content = file.read()
         file.close()
         return content
@@ -134,7 +134,7 @@ class Antnest:
         i = 0
         while len(self.rooms[-1].contains) < self.nba :
             i = i + 1
-            print('Etape {}'.format(i))
+            print('+++ E{} +++'.format(i))
             for k in range(nbr,-1,-1):
                 if len(self.rooms[k].contains) > 0 :
                     list_adj = self.adjacent_room(self.rooms[k])
