@@ -81,7 +81,7 @@ class Antnest:
                 tunnel = tunnel.replace('v', '0')
             if 'd' in tunnel:
                 tunnel = tunnel.replace('d', '{}'.format(nbr-1))
-            ind = re.findall(r"(?!S)[0-9]", tunnel)
+            ind = re.findall(r"(?!S)[0-9]+", tunnel)
             ind = [int(i) for i in ind]
             M[ind[0]][ind[1]] = 1
             M[ind[1]][ind[0]] = 1
@@ -159,16 +159,5 @@ class Antnest:
 if __name__ == '__main__':
     nest = Antnest()
     nest.look_at_the_graph()
-    #nest.all_to_sleep()
-    
-    
-
-
-
-
-
-
-
-
-
+    nest.all_to_sleep()
 
