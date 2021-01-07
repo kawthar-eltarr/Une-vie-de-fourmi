@@ -6,7 +6,6 @@ Created on Tue Dec  1 10:25:19 2020
 """
 import re
 import numpy as np
-import random
 from copy import copy
 
 import networkx as nx 
@@ -16,7 +15,6 @@ class Ant:
     def __init__(self, idx):
         self.idx = idx
         self.room = 'Sv'
-        self.went_to_sleep = False
     
     # def move(self, departure, arrival):
     #     self.room = arrival.name
@@ -29,8 +27,6 @@ class Room:
         self.name = name
         self.contains = contains
         self.capacity = capacity
-        #self.room_above = None
-        #self.room_below = None
 
 class Antnest:
     def __init__(self):
@@ -41,7 +37,7 @@ class Antnest:
         self.M = self.__adjacency_matrix__()
 
     def __load_file__(self):
-        file = open("Nests/fourmiliere_zero.txt", "r")
+        file = open("Nests/fourmiliere_cinq.txt", "r")
         content = file.read()
         file.close()
         return content
@@ -51,7 +47,7 @@ class Antnest:
         return int(res[0][2:])
     
     def __find_tunnels__(self, content):
-        res = re.findall(r"S[0-9a-z] - S[0-9a-z]", content)
+        res = re.findall(r"S[0-9a-z]+ - S[0-9a-z]+", content)
         return res
     
     def __find_rooms__(self):
@@ -111,29 +107,41 @@ class Antnest:
                  list_adj.append(self.rooms[i])
         return list_adj
     
-    def test(self):
-        return 0
-    
     def shift(self, room1, room2):
         if len(room1.contains) > room2.capacity:
             if room2.contains == 0:
-                room2.contains = copy(room2.contains) + copy(room1.contains[0:room2.capacity])
+                shifting_ants = copy(room1.contains[0:room2.capacity])
+                room2.contains = copy(room2.contains) + shifting_ants
                 room1.contains = copy(room1.contains[room2.capacity:])
+                for ant in shifting_ants:
+                    print('f{0} : {1} - {2}'.format(ant.idx, room1.name, room2.name))
             else:
                 r = room2.capacity - len(room2.contains)
-                room2.contains = copy(room2.contains) + copy(room1.contains[0:r])
+                shifting_ants = copy(room1.contains[0:r])
+                room2.contains = copy(room2.contains) + shifting_ants
                 room1.contains = copy(room1.contains[r:])
+                for ant in shifting_ants:
+                    print('f{0} : {1} - {2}'.format(ant.idx, room1.name, room2.name))
         else:
-            room2.contains = copy(room2.contains) + copy(room1.contains)
+            shifting_ants = copy(room1.contains)
+            room2.contains = copy(room2.contains) + shifting_ants
             room1.contains = []
+            for ant in shifting_ants:
+                print('f{0} : {1} - {2}'.format(ant.idx, room1.name, room2.name))
+        
+        del shifting_ants
+        
         return room1, room2
 
     
     def all_to_sleep(self):
+        print('Number of ants in the nest : {}'.format(self.nba))
+        print()
         nbr = len(self.rooms)-1
         i = 0
         while len(self.rooms[-1].contains) < self.nba :
             i = i + 1
+            print()
             print('+++ E{} +++'.format(i))
             for k in range(nbr,-1,-1):
                 if len(self.rooms[k].contains) > 0 :
@@ -143,7 +151,7 @@ class Antnest:
                     else:
                         ids = [l.idx for l in list_adj]
                         adj = self.rooms[max(ids)]
-                        print('From room {0} to room {1}'.format(self.rooms[k].name, adj.name))
+                        #print('From room {0} to room {1}'.format(self.rooms[k].name, adj.name))
                         self.rooms[k], adj = self.shift(self.rooms[k], adj)
                 else:
                     pass
@@ -151,7 +159,7 @@ class Antnest:
 if __name__ == '__main__':
     nest = Antnest()
     nest.look_at_the_graph()
-    nest.all_to_sleep()
+    #nest.all_to_sleep()
     
     
 
