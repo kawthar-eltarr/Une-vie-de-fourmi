@@ -24,15 +24,15 @@ class Room:
         self.capacity = capacity
 
 class Antnest:
-    def __init__(self):
-        self.content = self.__load_file__()
+    def __init__(self, file_name):
+        self.content = self.__load_file__(file_name)
         self.nba = self.__find_ants__()
         self.tunnels = self.__find_tunnels__(self.content)
         self.rooms = self.__build_rooms__()
         self.M = self.__adjacency_matrix__()
 
-    def __load_file__(self):
-        file = open("Nests/fourmiliere_un.txt", "r")
+    def __load_file__(self, file_name):
+        file = open(file_name, "r")
         content = file.read()
         file.close()
         return content
@@ -118,6 +118,47 @@ class Antnest:
         
         return room1, room2
 
+    def all_to_sleep(self):
+        print('Number of ants in the nest : {}'.format(self.nba))
+        print()
+        nbr = len(self.rooms)-1
+        i = 0
+
+        steps = {}
+        
+        while len(self.rooms[-1].contains) < self.nba :
+            i = i + 1
+            print()
+            print('+++ E{} +++'.format(i))
+            
+            l = []
+            for room in self.rooms:
+                l.append((len(room.contains), room.name))
+            steps[i-1] = l
+            
+            for k in range(nbr,-1,-1):
+                current_room = self.rooms[k]
+                #plt.annotate(len(current_room.contains), xy=nodePos.get(current_room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
+                
+                if len(current_room.contains) > 0 :
+                    list_adj = self.adjacent_room(current_room)
+                    if not list_adj:
+                        pass
+                    else:
+                        ids = [l.idx for l in list_adj]
+                        adjacent_room = self.rooms[max(ids)]
+                        current_room, adjacent_room = self.shift(current_room, adjacent_room)
+                        self.rooms[k] = current_room
+                        self.rooms[max(ids)] = adjacent_room
+                else:
+                    pass
+        l = []
+        for room in self.rooms:
+            l.append((len(room.contains), room.name))
+        steps[i-1] = l
+        return steps
+    
+    
     def init_graph(self):
         G = nx.from_numpy_array(self.M)
         dic = {0: 'Sv'}
@@ -129,38 +170,23 @@ class Antnest:
         G = nx.relabel_nodes(G, dic)
         nodePos = nx.spring_layout(G)
         return G, nodePos
-
-    def all_to_sleep(self):
-        print('Number of ants in the nest : {}'.format(self.nba))
-        print()
-        nbr = len(self.rooms)-1
-        i = 0
+    
+    def display_nest(self):
         G, nodePos = self.init_graph()
         nx.draw(G, nodePos, with_labels=True, font_size=8, alpha=0.8, node_color="#A86CF3")
-        while len(self.rooms[-1].contains) < self.nba :
-            i = i + 1
-            print()
-            print('+++ E{} +++'.format(i))
-            for k in range(nbr,-1,-1):
-                for room in self.rooms:
-                    plt.annotate(len(room.contains), xy=nodePos.get(room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
-                current_room = self.rooms[k]
-                if len(current_room.contains) > 0 :
-                    list_adj = self.adjacent_room(current_room)
-                    if not list_adj:
-                        pass
-                    else:
-                        ids = [l.idx for l in list_adj]
-                        adjacent_room = self.rooms[max(ids)]
-                        current_room, adjacent_room = self.shift(current_room, adjacent_room)
-                        self.rooms[k] = current_room
-                        self.rooms[max(ids)] = adjacent_room
-
+        steps = self.all_to_sleep()
+        for i in range(len(steps)):
+            for room in steps[i]:
+                if room[0] == 0:
+                    color = 'pink'
                 else:
-                    pass
-        plt.show()
-        
+                    color = 'red'
+                plt.annotate(room[0], xy=nodePos.get(room[1]), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc=color))
+                plt.pause(0.5)
+
 if __name__ == '__main__':
-    nest = Antnest()
-    nest.all_to_sleep()
+    file_name = "Nests/fourmiliere_cinq.txt"
+    nest = Antnest(file_name)
+    nest.display_nest()
+    
 
