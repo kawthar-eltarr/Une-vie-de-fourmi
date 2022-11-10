@@ -65,7 +65,6 @@ class Antnest:
                 objects.append(Room(idx=i, name=n, capacity=c))
             else:
                 objects.append(Room(idx=i, name=room))
-        #objects.append(Room(idx=len(objects), name='S{}'.format(len(objects)), capacity=float("inf")))
         objects.append(Room(idx=len(objects), name='Sd', capacity=float("inf")))
         return objects
     
@@ -137,9 +136,7 @@ class Antnest:
             steps[i-1] = l
             
             for k in range(nbr,-1,-1):
-                current_room = self.rooms[k]
-                #plt.annotate(len(current_room.contains), xy=nodePos.get(current_room.name), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc='cyan'))
-                
+                current_room = self.rooms[k]                
                 if len(current_room.contains) > 0 :
                     list_adj = self.adjacent_room(current_room)
                     if not list_adj:
@@ -182,7 +179,7 @@ class Antnest:
                 else:
                     color = 'red'
                 plt.annotate(room[0], xy=nodePos.get(room[1]), xytext=(0, 20), textcoords='offset points', bbox=dict(boxstyle="round", fc=color))
-                plt.pause(0.5)
+            plt.pause(1.5)
 
 if __name__ == '__main__':
     file_name = "Nests/fourmiliere_cinq.txt"
